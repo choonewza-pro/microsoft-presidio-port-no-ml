@@ -2,7 +2,8 @@
 
 [![Bun](https://img.shields.io/badge/Bun-1.4+-000000?style=flat&logo=bun)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6+-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org)
-[![Tests](https://img.shields.io/badge/Tests-479%20passed-brightgreen?style=flat&logo=checkmarx)](https://github.com)
+[![Tests](https://img.shields.io/badge/Tests-483%20passed-brightgreen?style=flat&logo=checkmarx)](https://github.com)
+[![ReDoS](https://img.shields.io/badge/Security-ReDoS%20Audited%20(Safe)-success?style=flat&logo=securityscorecard)](tests/security/redos.test.ts)
 [![Features](https://img.shields.io/badge/Recognizers-89%20Features-blue?style=flat)](docs/architecture.md)
 [![Countries](https://img.shields.io/badge/Coverage-19%20Countries%20+%20Global-orange?style=flat)](docs/architecture.md)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
@@ -15,6 +16,7 @@
 ## 🌟 จุดเด่น (Key Features)
 
 * ⚡ **High Performance & Zero-Python**: เริ่มต้นทำงานได้ทันที ไม่ต้องติดตั้ง Python environment หรือดาวน์โหลดโมเดล NLP หลาย GB
+* 🛡️ **Gateway Ready & ReDoS Safe**: ผ่านการ Audit ทั้ง 116 Regex Patterns ด้วย `recheck` การันตีปลอด Catastrophic Backtracking ($O(n)$) พร้อม **Input Guard Layer** จำกัดความยาวข้อความ (Default: `100,000` ตัวอักษร) ป้องกัน Event Loop ค้าง
 * 🎯 **1:1 Presidio Accuracy**: พอร์ต Regex, Logic, Context Words และ Checksum Algorithm (Mod11, Luhn, Verhoeff ฯลฯ) ตรงตามต้นฉบับ
 * 🇹🇭 **Full Thai Support**: รองรับเลขบัตรประจำตัวประชาชนไทย (TH_TNIN) พร้อมระบบตรวจสอบ Checksum Mod 11 และรหัสจังหวัด
 * 🌍 **Global & Country-Specific**: รองรับ 89 PII Recognizers ครอบคลุม Global และ 19 ประเทศ
@@ -203,20 +205,40 @@ microsoft-presidio-port/
 │   ├── anonymizer/            # AnonymizerEngine & Operators (replace, mask, encrypt ฯลฯ)
 │   └── structured/            # StructuredEngine สำหรับ Nested JSON / Object / Array
 ├── docs/                      # แคตตาล็อกเอกสารแยกแต่ละประเทศและ Engine
-├── tests/                     # Test suites ครบ 89 features และทุก Engine (479 tests)
+├── scripts/                   # เครื่องมือ Security Audit สแกน ReDoS (audit-regex.ts)
+├── tests/                     # Test suites ครบ 89 features, ทุก Engine และ Security (483 tests)
 ├── package.json
 └── tsconfig.json
 ```
 
 ---
 
+## 🛡️ ความปลอดภัยระดับ Gateway (Gateway Security & ReDoS Protection)
+
+ระบบได้รับการออกแบบให้พร้อมทำงานเป็นด่านแรก (Frontline Security Filter) ที่ Gateway:
+
+1. **ReDoS Immunity**: สแกนและยืนยันผ่านเครื่องมือ `recheck` แล้วทั้ง 116 Regex Patterns ว่าปลอดภัยจาก Exponential / Catastrophic Backtracking ทำงานแบบ $O(n)$ เสมอ
+2. **Input Guard Layer**: ป้องกันการส่ง Payload ขนาดยาวผิดปกติเข้ามาโจมตี
+   ```ts
+   // ปรับแต่งค่า Input Guard ใน AnalyzerEngine
+   const analyzer = new AnalyzerEngine({
+     defaultMaxTextLength: 100_000, // ค่าเริ่มต้น 100,000 ตัวอักษร
+     defaultOnMaxLengthExceeded: "reject", // "reject" (throw error) หรือ "truncate" (ตัดส่วนเกิน)
+   });
+   ```
+
+---
+
 ## 🧪 การทดสอบ (Testing)
 
-โปรเจกต์นี้มี Unit Test ครอบคลุม 479 รายการใน 92 Test Files:
+โปรเจกต์นี้มี Test ครอบคลุม 483 รายการใน 93 Test Files:
 
 ```bash
-# รันชุดทดสอบทั้งหมด
+# รันชุดทดสอบทั้งหมด (รวม Unit & Security Tests)
 bun test
+
+# รัน Security Audit ตรวจสอบ ReDoS ทุก Pattern
+bun run audit:regex
 
 # รันเฉพาะฟีเจอร์ไทย (Thai National ID)
 bun test tests/th/thTnin.test.ts

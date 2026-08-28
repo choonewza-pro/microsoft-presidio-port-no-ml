@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "test": "bun test",
-    "test:watch": "bun test --watch"
+    "test:watch": "bun test --watch",
+    "audit:regex": "bun run scripts/audit-regex.ts"
   },
   "keywords": ["presidio", "pii", "regex", "thailand", "tnin"],
   "license": "MIT",
   "devDependencies": {
     "bun-types": "^1.4.0",
+    "recheck": "^4.5.0",
     "typescript": "5.6"
   }
 }

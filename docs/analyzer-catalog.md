@@ -29,6 +29,8 @@ analyzer.analyze("เลขบัตร 1234567890121 email test@example.com", {
 | `scoreThreshold` | `number` | `0` | กรอง `score >= threshold` (`analyzer_engine.py:354`) |
 | `allowList` | `string[]` | `[]` | คำที่อนุญาต (`_remove_allow_list` `analyzer_engine.py:417` exact/regex) |
 | `context` | `string[]` | `[]` | คำ context เพิ่มเติม boost `0.85` ถ้าเจอใน `CONTEXT_WINDOW 50` (`src/analyzer/engine.ts:1` `enhanceWithContext`) |
+| `maxTextLength` | `number` | `100_000` | เพดานความยาวตัวอักษรสูงสุด ป้องกัน ReDoS/DoS |
+| `onMaxLengthExceeded` | `"reject" \| "truncate"` | `"reject"` | พฤติกรรมเมื่อเกินเพดาน: โยน Error หรือตัดข้อความส่วนเกิน |
 
 ### Methods
 

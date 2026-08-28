@@ -13,9 +13,14 @@ export interface AnalyzeOptions {
   allowList?: string[];
   allowListMatch?: "exact" | "regex";
   context?: string[];
+  /** Maximum length of text to analyze. Default: 100,000 chars */
+  maxTextLength?: number;
+  /** Action when text length exceeds maxTextLength: 'reject' throws Error, 'truncate' slices text */
+  onMaxLengthExceeded?: "reject" | "truncate";
 }
 
 const DEFAULT_SCORE_THRESHOLD = 0;
+const DEFAULT_MAX_TEXT_LENGTH = 100_000;
 const CONTEXT_WINDOW = 50; // chars
 
 function getRecognizers(language: string, entities?: string[]) {
@@ -90,10 +95,19 @@ function removeAllowList(results: RecognizerResult[], text: string, allowList?: 
 export class AnalyzerEngine {
   supportedLanguages: string[];
   defaultScoreThreshold: number;
+  defaultMaxTextLength: number;
+  defaultOnMaxLengthExceeded: "reject" | "truncate";
 
-  constructor(opts: { supportedLanguages?: string[]; defaultScoreThreshold?: number } = {}) {
+  constructor(opts: {
+    supportedLanguages?: string[];
+    defaultScoreThreshold?: number;
+    defaultMaxTextLength?: number;
+    defaultOnMaxLengthExceeded?: "reject" | "truncate";
+  } = {}) {
     this.supportedLanguages = opts.supportedLanguages ?? ["en"];
     this.defaultScoreThreshold = opts.defaultScoreThreshold ?? DEFAULT_SCORE_THRESHOLD;
+    this.defaultMaxTextLength = opts.defaultMaxTextLength ?? DEFAULT_MAX_TEXT_LENGTH;
+    this.defaultOnMaxLengthExceeded = opts.defaultOnMaxLengthExceeded ?? "reject";
   }
 
   getRecognizers(language?: string) {
@@ -105,6 +119,23 @@ export class AnalyzerEngine {
   }
 
   analyze(text: string, opts: AnalyzeOptions & { language: string }): RecognizerResult[] {
+    if (!text || typeof text !== "string") {
+      return [];
+    }
+
+    const maxLen = opts.maxTextLength ?? this.defaultMaxTextLength;
+    const overflowAction = opts.onMaxLengthExceeded ?? this.defaultOnMaxLengthExceeded;
+
+    if (text.length > maxLen) {
+      if (overflowAction === "reject") {
+        throw new Error(
+          `[AnalyzerEngine] Input text length (${text.length}) exceeds maximum allowed limit of ${maxLen} characters.`
+        );
+      } else {
+        text = text.slice(0, maxLen);
+      }
+    }
+
     const language = opts.language;
     const entities = opts.entities;
     const scoreThreshold = opts.scoreThreshold ?? this.defaultScoreThreshold;

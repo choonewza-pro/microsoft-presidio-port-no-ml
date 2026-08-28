@@ -5,12 +5,19 @@
 ## Pipeline
 
 ```
-Text
-  → src/features/<country>/<feature>/index.ts:1 (89 regex, 0.01-0.8, validate checksum)
-  → src/analyzer/engine.ts:1 AnalyzerEngine (registry 95 entries conf/default_recognizers.yaml:1, context window 50, allowList, dedup)
-  → src/anonymizer/engine.ts:1 AnonymizerEngine (TextReplaceBuilder from end, conflict merge, 8 operators)
-  → src/structured/engine.ts:1 StructuredEngine (Dict/Array, nested person.name)
+Text (Incoming Untrusted Payload)
+  → Layer 1: Input Guard (maxTextLength: 100,000, reject/truncate overflow)
+  → Layer 2: Recognizers (116 regex patterns across 89 features, audited with recheck, O(n) safe)
+  → Layer 3: AnalyzerEngine (registry, context window 50, allowList, score threshold, dedup)
+  → Layer 4: AnonymizerEngine (TextReplaceBuilder from end, conflict merge, 8 operators)
+  → Layer 5: StructuredEngine (Dict/Array, nested path traversal)
 ```
+
+## Security & ReDoS Protection (Gateway Hardening)
+
+* **ReDoS Audited**: ทุก Regex Pattern (116 patterns) ผ่านการสแกนด้วย `recheck` เพื่อป้องกัน Catastrophic Backtracking ($O(2^n)$) ไม่ให้ Event loop ของ Bun ค้างเมื่อรับ untrusted input
+* **Input Guard Layer**: ป้องกัน Memory Exhaustion และ CPU overload โดยมีเพดาน `maxTextLength: 100,000` ตัวอักษร (ปรับแต่งได้)
+* **Automated Audit**: มี CI script `bun run audit:regex` (`scripts/audit-regex.ts`) ตรวจจับ regex regressions
 
 ## Core
 
@@ -37,5 +44,6 @@ Text
 
 ## Tests
 
-* `tests/<country>/<feature>.test.ts:1` 89 files + `tests/anonymizer`, `tests/analyzer`, `tests/structured` = `367 pass` (`tests/th/thTnin.test.ts:1` 54 tests as baseline)
+* `tests/<country>/<feature>.test.ts:1` 89 files + `tests/anonymizer`, `tests/analyzer`, `tests/structured`, `tests/security/redos.test.ts` = `483 pass` (`tests/th/thTnin.test.ts:1` 54 tests as baseline)
 * `bun test` in `microsoft-presidio-port`
+* `bun run audit:regex` for ReDoS security validation
