@@ -121,7 +121,7 @@ export function analyze(
         analysisExplanation: {
           recognizer: "UsNpiRecognizer",
           patternName: p.name,
-          pattern: p.regex,
+          pattern: p.regex.source,
           originalScore: p.score,
           validationResult: isValid,
           textualExplanation: `Detected by \`UsNpiRecognizer\` using pattern \`${p.name}\``,

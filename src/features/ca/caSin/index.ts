@@ -99,7 +99,7 @@ export function analyze(text: string): RecognizerResult[] {
         analysisExplanation: {
           recognizer: ENTITY_TYPE,
           patternName: p.name,
-          pattern: p.regex,
+          pattern: p.regex.source,
           originalScore: p.score,
           validationResult: true,
           textualExplanation: `Detected by ${ENTITY_TYPE} using pattern ${p.name}`,

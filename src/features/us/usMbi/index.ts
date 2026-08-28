@@ -69,8 +69,8 @@ export function analyze(
   replacementPairs: ReplacementPair[] = [],
 ): RecognizerResult[] {
   return findAll(text, replacementPairs).map(({ value, start, end, score }) => {
-    let patternName = PATTERNS[0]!.name;
-    let patternSource = PATTERNS[0]!.regex;
+    let patternName: string = PATTERNS[0]!.name;
+    let patternSource: string = PATTERNS[0]!.regex;
     for (const p of PATTERNS) {
       const re = new RegExp(`^(?:${p.regex})$`, "ims");
       if (re.test(value)) { patternName = p.name; patternSource = p.regex; break; }

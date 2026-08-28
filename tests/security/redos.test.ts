@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, expect, test } from "bun:test";
 import { check } from "recheck";
 import * as features from "../../src/features/index.ts";

@@ -108,7 +108,7 @@ export function analyze(
         analysisExplanation: {
           recognizer: "AbaRoutingRecognizer",
           patternName: p.name,
-          pattern: p.regex,
+          pattern: p.regex.source,
           originalScore: p.score,
           validationResult: isValid,
           textualExplanation: `Detected by \`AbaRoutingRecognizer\` using pattern \`${p.name}\``,

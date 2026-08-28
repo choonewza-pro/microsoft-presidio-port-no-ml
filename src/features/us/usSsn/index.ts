@@ -104,8 +104,8 @@ export function analyze(
 ): RecognizerResult[] {
   return findAll(text, replacementPairs).map(({ value, start, end, score }) => {
     // determine pattern name
-    let patternName = "SSN5 (medium)";
-    let patternSource = PATTERNS[4]!.regex;
+    let patternName: string = "SSN5 (medium)";
+    let patternSource: string = PATTERNS[4]!.regex;
     for (const p of PATTERNS) {
       const re = new RegExp(`^${p.regex}$`, "ims");
       if (re.test(value)) { patternName = p.name; patternSource = p.regex; break; }
